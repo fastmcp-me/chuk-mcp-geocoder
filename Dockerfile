@@ -64,11 +64,12 @@ ENV PYTHONUNBUFFERED=1 \
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD python -c "import sys; sys.path.insert(0, '/app/src'); import chuk_mcp_geocoder; print('OK')" || exit 1
 
-# Default command - run MCP server in HTTP mode for Docker
-CMD ["python", "-m", "chuk_mcp_geocoder.server", "http"]
-
 # Expose port for HTTP mode
 EXPOSE 8010
+
+# Default command - run MCP server in HTTP mode for Docker
+# Must bind to 0.0.0.0 (not localhost) to be reachable outside the container
+CMD ["python", "-m", "chuk_mcp_geocoder.server", "http", "--host", "0.0.0.0"]
 
 # Labels for metadata
 LABEL description="Geocoder MCP Server - Geocoding & Place Discovery via Nominatim/OpenStreetMap" \
