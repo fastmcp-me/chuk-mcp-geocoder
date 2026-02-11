@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "geocoder": {
+      "command": "uv",
+      "args": ["run", "chuk-mcp-geocoder", "stdio"],
+      "env": {
+        "NOMINATIM_EMAIL": ""
+      }
+    }
+  }
+}
