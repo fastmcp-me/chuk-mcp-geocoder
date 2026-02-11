@@ -44,6 +44,29 @@ def register_geocoding_tools(mcp, geocoder):
 
         Returns:
             List of matching places with coordinates, bbox, and address details
+
+        CRITICAL — LLM retry workflow when no results are found:
+            Nominatim works best with simple, well-known place names. Specific
+            or compound names (e.g. "Strood Causeway, Mersea Island, UK") often
+            return nothing.
+
+            If the query returns no results, you MUST retry automatically — do
+            NOT ask the user. Follow this cascade:
+
+            1. Remove qualifiers and landmarks — keep only the core place name.
+               "Strood Causeway, Mersea Island, UK" → "Mersea Island, UK"
+               "Portland Harbor, Maine" → "Portland, Maine"
+            2. Simplify further — drop region/country qualifiers.
+               "Mersea Island, UK" → "Mersea Island"
+               "Portland, Maine" → "Portland"
+            3. Use countrycodes to narrow broad queries (e.g. countrycodes="gb").
+            4. If the place is near a well-known location, geocode that instead
+               and report the approximate area.
+            5. Try alternative or official names — "The Strood" instead of
+               "Strood Causeway", etc.
+
+            Always retry at least twice with progressively simpler terms before
+            telling the user the location could not be found.
         """
         try:
             items = await geocoder.geocode(
@@ -135,6 +158,20 @@ def register_geocoding_tools(mcp, geocoder):
 
         Returns:
             Bounding box [west, south, east, north], center point, and approximate area
+
+        CRITICAL — LLM retry workflow when no results are found:
+            If the query returns no results, you MUST retry automatically — do
+            NOT ask the user. Simplify the query progressively:
+
+            1. Remove specific landmarks/features, keep the broader place.
+               "Strood Causeway, Mersea Island" → "Mersea Island"
+            2. Drop region/country qualifiers if still no results.
+               "Mersea Island, Essex, UK" → "Mersea Island"
+            3. Try alternative or official names for the place.
+            4. If using a broader place, consider adding padding to cover the
+               area of interest (e.g. padding=0.1 for 10% expansion).
+
+            Always retry at least twice before reporting failure.
         """
         try:
             result = await geocoder.bbox_from_place(query, padding=padding)

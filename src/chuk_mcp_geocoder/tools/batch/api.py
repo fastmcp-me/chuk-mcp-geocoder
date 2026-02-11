@@ -45,6 +45,12 @@ def register_batch_tools(mcp, geocoder):
 
         Returns:
             Per-query results with coordinates, or error for failed queries
+
+        CRITICAL — LLM retry guidance:
+            If any query in the batch fails, re-run only the failed queries
+            with simplified names using the single geocode tool. Nominatim
+            works best with simple place names — remove landmarks, qualifiers,
+            and descriptive words before retrying.
         """
         try:
             try:
@@ -118,6 +124,11 @@ def register_batch_tools(mcp, geocoder):
 
         Returns:
             Resolved waypoints, leg distances, total distance, and bounding box
+
+        CRITICAL — LLM retry guidance:
+            If a waypoint fails to resolve, simplify its name and retry the
+            entire route. Remove landmarks, qualifiers, and descriptive words.
+            Use the single geocode tool to test problematic names first.
         """
         try:
             try:
